@@ -67,7 +67,7 @@ ringBufferReadExitWithT:
  Запись байта в буфер
  Y - буфер, R20 - байт для записи
  Если буфер переполнен, свигается вперед указатель чтения, выставляется флаг T
- Если буфер не переполнен - флаг T сбрасывается
+ Если буфер еще не заполнен - флаг T сбрасывается
 */
 RingBufferWrite:
             PUSHF_17
@@ -275,6 +275,10 @@ RingBufferToStringEnd:
             POPZ
             POPF_17_18_19
             RET
+.undef in_buff_read_pos
+.undef in_buff_write_pos
+.undef in_buff_size
+.undef tmp
 
 /*
  Копируем из буфера в строку
