@@ -89,9 +89,9 @@ uartInit:
             RET
 
 /*
- препывание UDREaddr
+ прерывание UDREaddr
 */
-uartDataRegisterEmpty:
+uartDataRegisterEmptyHandler:
             PUSHF
             PUSH R20
             PUSHY
@@ -109,23 +109,10 @@ uartDataRegisterExit:
             POPF
             RETI
 
-// 
-
-/*
- Добавить обработчик uart команды
- сигнатура вызова: в Y ring буфер с командой
-
-*/
-.macro UartSetHandlerMacro
-    .equ _uart_command_handler = @0
-    LDI XH, high(_uart_command_handler)
-    LDI XL, low(_uart_command_handler)
-.endm
-
 /*
  прерывание URXCaddr 
 */
-uartRxComplete:
+uartRxCompleteHandler:
             PUSHF
             PUSH R20
             PUSHY
