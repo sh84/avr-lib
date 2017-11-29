@@ -41,4 +41,24 @@ stringCmpToTextExit:
             RCALL stringCmpToText
 .endm
 
+hexToAscii:
+            PUSH R16
+            PUSH R16
+            RCALL hexToAsciiHalf
+            MOV R21, R16
+            POP R16
+            SWAP R16
+            RCALL hexToAsciiHalf
+            MOV R20, R16
+            POP R16
+            RET
+hexToAsciiHalf:
+            ANDI R16, 0x0f
+            CPI R16, 10
+            BRLO hexToAsciiNumber
+            SUBI R16, -0x07
+hexToAsciiNumber:
+            SUBI R16, -0x30
+            RET
+
 #define __strings_lib

@@ -8,7 +8,7 @@
             .equ _uart_out_buff = @1
             RingBufferInitMacro _uart_in_buff, @2
             RingBufferInitMacro _uart_out_buff, @2
-            .equ UART_UBBR = CLOCK_FREQUENCY / (16 * @3) - 1
+            .equ UART_UBBR = CLOCK_FREQUENCY / (8 * @3) - 1
             RCALL uartInit
 .endm
 
@@ -83,7 +83,7 @@
 uartInit:  
             OUTI UBRR0H, High(UART_UBBR)                  // выставяем скорость передачи
             OUTI UBRR0L, Low(UART_UBBR)
-            OUTI UCSR0A, 0
+            OUTI UCSR0A, 1<<U2X0                          // удвоение скорсоти
             OUTI UCSR0B, 1<<RXEN0 | 1<<TXEN0 | 1<<RXCIE0 | 0<<TXCIE0 | 1<<UDRIE0 // включаем выходы TX и RX, прерывание по поступлению байта
             OUTI UCSR0C, 1<<UCSZ00|1<<UCSZ01              // асинхронный режим, четность выкл, 1 стоп бит, 8 бит
             RET
@@ -147,5 +147,42 @@ uartRxCompleteExit:
             POP R20
             POPF
             RETI
+
+/*
+  отправка ошибки
+  в Y адрес строки в флеш памяти с ошибкой
+  в Z 2 байта дополнительной информации по ошибке
+*/
+uartSendError:
+            PUSH R20
+            PUSH R21
+            PUSH ZL
+            PUSH ZH
+            MOVW Z, Y
+            LDI YH, high(_uart_out_buff)
+            LDI YL, low(_uart_out_buff)
+            RCALL RingBufferLPM
+            LDI ZH, high(UART_ERROR_POSTFIX_TEXT*2)
+            LDI ZL, low(UART_ERROR_POSTFIX_TEXT*2)
+            RCALL RingBufferLPM
+            POP R16
+            RCALL hexToAscii
+            RCALL RingBufferWrite
+            MOV R20, R21
+            RCALL RingBufferWrite
+            POP R16
+            RCALL hexToAscii
+            RCALL RingBufferWrite
+            MOV R20, R21
+            RCALL RingBufferWrite
+            LDI R20, '\n'
+            RCALL RingBufferWrite
+            UartSendMacro
+            POP R21
+            POP R20
+            RET
+
+UART_ERROR_POSTFIX_TEXT: .db ", code: ", 0, 0
+
 
 #define __uart_lib

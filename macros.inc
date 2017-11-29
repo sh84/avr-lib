@@ -81,6 +81,17 @@
 .endm
 
 /*
+ LDI + STS
+ USAGE: STSI addr, VALUE
+ TMPR: R16
+*/
+.macro STSI
+            LDI R16, @1
+            STS @0, R16
+.endm
+
+
+/*
  PUSH для SREG и R16
  USAGE: PUSHF
 */
